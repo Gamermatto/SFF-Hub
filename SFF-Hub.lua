@@ -1,4 +1,6 @@
 --if game.PlaceId == 13772394625 then
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
 -- Funzione per mostrare la notifica
 function showAchievementNotification()
     game:GetService("StarterGui"):SetCore("SendNotification", {
@@ -14,7 +16,6 @@ showAchievementNotification()
 
 task.wait(7)
 
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
