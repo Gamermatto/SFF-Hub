@@ -166,7 +166,7 @@ if game.PlaceId == 13772394625 then
 
     -- CombatTab
     local CombatTab = Window:CreateTab("Combat", nil)
-    local Section = Combat:CreateSection("Combat")  -- Forza la visibilità della sezione
+    local Section = CombatTab:CreateSection("Combat")  -- Forza la visibilità della sezione
 
     local Button = CombatTab:CreateButton({
         Name = "Button Example",
@@ -180,8 +180,119 @@ if game.PlaceId == 13772394625 then
         CurrentValue = false,
         Flag = "AutoSpam", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
         Callback = function(Value)
-        -- The function that takes place when the toggle is pressed
-        -- The variable (Value) is a boolean on whether the toggle is true or false
+            local RunService = game:GetService("RunService")
+            local Players = game:GetService("Players")
+            local VirtualInputManager = game:GetService("VirtualInputManager")
+            
+            local Player = Players.LocalPlayer
+            local Cooldown = tick()
+            local IsParried = false
+            local Connection = nil
+            
+            -- Anti-spam setup
+            local recentHits = {}
+            local spamActive = false
+            local SPAM_THRESHOLD = 3        -- colpi ravvicinati richiesti
+            local TIME_WINDOW = 1.5         -- secondi entro cui devono avvenire i colpi
+            local spamConnection = nil
+            
+            -- Ottieni la palla
+            local function GetBall()
+                for _, Ball in ipairs(workspace.Balls:GetChildren()) do
+                    if Ball:GetAttribute("realBall") then
+                        return Ball
+                    end
+                end
+            end
+            
+            -- Reset connessione
+            local function ResetConnection()
+                if Connection then
+                    Connection:Disconnect()
+                    Connection = nil
+                end
+            end
+            
+            -- Calcolo finestra parry
+            local function CalculateParryWindow(Ball, HRP)
+                local Speed = Ball.zoomies.VectorVelocity.Magnitude
+                local Distance = (HRP.Position - Ball.Position).Magnitude
+                return Distance / Speed
+            end
+            
+            -- Funzione spam click
+            local function StartSpamClick()
+                if spamConnection then return end -- già attivo
+                spamActive = true
+                spamConnection = RunService.RenderStepped:Connect(function()
+                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                    task.wait(0.01) -- intervallo velocissimo
+                end)
+            end
+            
+            local function StopSpamClick()
+                if spamConnection then
+                    spamConnection:Disconnect()
+                    spamConnection = nil
+                end
+                spamActive = false
+            end
+            
+            -- Gestione auto parry
+            RunService.PreSimulation:Connect(function()
+                local Ball = GetBall()
+                local HRP = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                if not Ball or not HRP then return end
+            
+                local TimeToHit = CalculateParryWindow(Ball, HRP)
+            
+                -- Se destinata al giocatore
+                if Ball:GetAttribute("target") == Player.Name then
+                    -- Registra l’evento
+                    table.insert(recentHits, tick())
+                    -- Pulisce eventi vecchi
+                    for i = #recentHits, 1, -1 do
+                        if tick() - recentHits[i] > TIME_WINDOW then
+                            table.remove(recentHits, i)
+                        end
+                    end
+            
+                    -- Attiva spam mode se troppe hit ravvicinate
+                    if #recentHits >= SPAM_THRESHOLD and not spamActive then
+                        StartSpamClick()
+                    end
+            
+                    -- Parry normale
+                    if not IsParried and TimeToHit <= 0.65 then
+                        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                        IsParried = true
+                        Cooldown = tick()
+                    end
+                end
+            
+                -- Cooldown reset
+                if (tick() - Cooldown) >= 1 then
+                    IsParried = false
+                end
+            
+                -- Spegni spam se non riceve colpi per un po’
+                if #recentHits > 0 and (tick() - recentHits[#recentHits]) > TIME_WINDOW then
+                    recentHits = {}
+                    StopSpamClick()
+                end
+            end)
+            
+            -- Monitoraggio nuove palle
+            workspace.Balls.ChildAdded:Connect(function()
+                local Ball = GetBall()
+                if Ball then
+                    ResetConnection()
+                    Connection = Ball:GetAttributeChangedSignal("target"):Connect(function()
+                        IsParried = false
+                    end)
+                end
+            end)
+            
         end,
      })
 else
