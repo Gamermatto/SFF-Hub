@@ -1,191 +1,172 @@
 -- Verifica l'ID del gioco
 print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
 
-
-if game.PlaceId == 13772394625 or game.PLaceId == 15234596844 then
+if game.PlaceId == 13772394625 then
     -- Codice per la notifica di successo
     print("SFF Hub loaded correctly")  -- Aggiungi questa per debug
 
-   local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-   
-   local Players = game:GetService("Players")
-   local player = Players.LocalPlayer
+    local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-   -- Funzione per mostrare la notifica
-   function showAchievementNotification()
-       game:GetService("StarterGui"):SetCore("SendNotification", {
-           Title = "SFF Hub loaded correctly",
-           Text = "Discord",
-           Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
-           Duration = 5  -- La durata della notifica in secondi
-       })
-   end
+    local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
 
-   -- Mostra la notifica
-   showAchievementNotification()
-
-   -- Aspetta 7 secondi prima di creare la finestra
-   task.wait(6)
-
-   local Window = Rayfield:CreateWindow({
-       Name = "Blade Ball",
-       Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-       LoadingTitle = "SFF Hub",
-       LoadingSubtitle = "by Gamermatto562",
-       Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
-
-       DisableRayfieldPrompts = false,
-       DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
-
-       ConfigurationSaving = {
-           Enabled = false,
-           FolderName = nil, -- Create a custom folder for your hub/game
-           FileName = "SFF Hub"
-       },
-
-       Discord = {
-           Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
-           Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
-           RememberJoins = true -- Set this to false to make them join the discord every time they load it up
-       },
-
-       KeySystem = true, -- Set this to true to use our key system
-       KeySettings = {
-           Title = "SFF HUb | Key",
-           Subtitle = "Link In Discord Server",
-           Note = "c", -- Use this to tell the user how to get a key
-           FileName = "SFF Hub | Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
-           SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
-           GrabKeyFromSite = true, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
-           Key = {"https://pastebin.com/raw/0hCfHjs8"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
-       }
-   })
-
-   -- MainTab
-   local MainTab = Window:CreateTab("Home", nil) -- Title, Image
-   local MainSection = MainTab:CreateSection("Main")
-
-   local Toggle = MainTab:CreateToggle({
-       Name = "Auto Parry",
-       CurrentValue = false,
-       Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-       Callback = function(Value)
-        local Toggle = MainTab:CreateToggle({
-            Name = "Auto Parry",
-            CurrentValue = false,
-            Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-            Callback = function(Value)
-                local RunService = game:GetService("RunService")
-                local Players = game:GetService("Players")
-                local VirtualInputManager = game:GetService("VirtualInputManager")
-        
-                local Player = Players.LocalPlayer
-                local Cooldown = tick()
-                local IsParried = false
-                local Connection = nil
-        
-                -- Function to get the ball with the "realBall" attribute
-                local function GetBall()
-                    for _, Ball in ipairs(workspace.Balls:GetChildren()) do
-                        if Ball:GetAttribute("realBall") then
-                            return Ball
-                        end
-                    end
-                end
-        
-                -- Function to reset the connection
-                local function ResetConnection()
-                    if Connection then
-                        Connection:Disconnect()
-                        Connection = nil
-                    end
-                end
-        
-                -- Reset connection when a new ball is added
-                workspace.Balls.ChildAdded:Connect(function()
-                    local Ball = GetBall()
-                    if Ball then
-                        ResetConnection()
-                        Connection = Ball:GetAttributeChangedSignal("target"):Connect(function()
-                            IsParried = false
-                        end)
-                    end
-                end)
-        
-                -- Handle the parrying logic during the simulation
-                RunService.PreSimulation:Connect(function()
-                    local Ball, HRP = GetBall(), Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-                    if not Ball or not HRP then return end
-        
-                    local Speed = Ball.zoomies.VectorVelocity.Magnitude
-                    local Distance = (HRP.Position - Ball.Position).Magnitude
-        
-                    if Ball:GetAttribute("target") == Player.Name and not IsParried and Distance / Speed <= 0.65 then
-                        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                        IsParried = true
-                        Cooldown = tick()
-                    end
-        
-                    -- Reset parried status after cooldown
-                    if (tick() - Cooldown) >= 1 then
-                        IsParried = false
-                    end
-                end)
-            end,
-        })
-    end,
-
-   local Slider = MainTab:CreateSlider({
-       Name = "WalkSpeed",
-       Range = {3, 200},
-       Increment = 1,
-       Suffix = "Speed",
-       CurrentValue = 16,
-       Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-       Callback = function(Value)
-           game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = (Value)
-       end,
-   })
-
-   local Dropdown = MainTab:CreateDropdown({
-       Name = "Select Test",
-       Options = {"Option 1", "Option 2"},
-       CurrentOption = {"Option 1"},
-       MultipleOptions = false,
-       Flag = "Dropdown1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-       Callback = function(Options)
-           print(Options)
-       end,
-   })
-
-   -- CombatTab
-    local Combat = Window:CreateTab("Combat", nil)
-    local CombatSection = Combat:CreateSection("Combat", {Visible = true})  -- Forza la visibilità della sezione
-
-
-   local Toggle = CombatSection:CreateToggle({
-       Name = "Auto Parry",
-       CurrentValue = false,
-       Flag = "AutoParry", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-       Callback = function(Value)
-           
-       end,
-   })
-else
-    -- Codice per la notifica di errore se PlaceId non corrisponde
-    print("SFF Hub not loaded correctly")  -- Aggiungi questa per debug
-    
-    -- Funzione per mostrare la notifica di errore
-    function showAchievementNotification()
-        print("Mostra la notifica di errore")  -- Aggiungi per debug
+    -- Funzione per mostrare la notifica
+    function showAchievementNotification(title, text)
         game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "SFF Hub not loaded correctly",
-            Text = "Discord",
-            Icon = "rbxassetid://1234567890",  -- Opzionale: sostituisci con un'icona personalizzata
+            Title = title,
+            Text = text,
+            Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
             Duration = 5  -- La durata della notifica in secondi
         })
     end
 
+    -- Mostra la notifica di successo
+    showAchievementNotification("SFF Hub loaded correctly", "Discord")
+
+    -- Aspetta 7 secondi prima di creare la finestra
+    task.wait(6)
+
+    local Window = Rayfield:CreateWindow({
+        Name = "Blade Ball",
+        Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+        LoadingTitle = "SFF Hub",
+        LoadingSubtitle = "by Gamermatto562",
+        Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+
+        DisableRayfieldPrompts = false,
+        DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+
+        ConfigurationSaving = {
+            Enabled = false,
+            FolderName = nil, -- Create a custom folder for your hub/game
+            FileName = "SFF Hub"
+        },
+
+        Discord = {
+            Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
+            Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+            RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+        },
+
+        KeySystem = true, -- Set this to true to use our key system
+        KeySettings = {
+            Title = "SFF HUb | Key",
+            Subtitle = "Link In Discord Server",
+            Note = "c", -- Use this to tell the user how to get a key
+            FileName = "SFF Hub | Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+            SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+            GrabKeyFromSite = true, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+            Key = {"https://pastebin.com/raw/0hCfHjs8"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+        }
+    })
+
+    -- MainTab
+    local MainTab = Window:CreateTab("Home", nil) -- Title, Image
+    local MainSection = MainTab:CreateSection("Main")
+
+    local AutoParryToggle = MainTab:CreateToggle({
+        Name = "Auto Parry",
+        CurrentValue = false,
+        Flag = "AutoParry", -- A flag is the identifier for the configuration file
+        Callback = function(Value)
+            local RunService = game:GetService("RunService")
+            local Players = game:GetService("Players")
+            local VirtualInputManager = game:GetService("VirtualInputManager")
+
+            local Player = Players.LocalPlayer
+            local Cooldown = tick()
+            local IsParried = false
+            local Connection = nil
+
+            -- Function to get the ball with the "realBall" attribute
+            local function GetBall()
+                for _, Ball in ipairs(workspace.Balls:GetChildren()) do
+                    if Ball:GetAttribute("realBall") then
+                        return Ball
+                    end
+                end
+            end
+
+            -- Function to reset the connection
+            local function ResetConnection()
+                if Connection then
+                    Connection:Disconnect()
+                    Connection = nil
+                end
+            end
+
+            -- Reset connection when a new ball is added
+            workspace.Balls.ChildAdded:Connect(function()
+                local Ball = GetBall()
+                if Ball then
+                    ResetConnection()
+                    Connection = Ball:GetAttributeChangedSignal("target"):Connect(function()
+                        IsParried = false
+                    end)
+                end
+            end)
+
+            -- Handle the parrying logic during the simulation
+            RunService.PreSimulation:Connect(function()
+                local Ball, HRP = GetBall(), Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                if not Ball or not HRP then return end
+
+                local Speed = Ball.zoomies.VectorVelocity.Magnitude
+                local Distance = (HRP.Position - Ball.Position).Magnitude
+
+                if Ball:GetAttribute("target") == Player.Name and not IsParried and Distance / Speed <= 0.65 then
+                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                    IsParried = true
+                    Cooldown = tick()
+                end
+
+                -- Reset parried status after cooldown
+                if (tick() - Cooldown) >= 1 then
+                    IsParried = false
+                end
+            end)
+        end,
+    })
+
+    local Slider = MainTab:CreateSlider({
+        Name = "WalkSpeed",
+        Range = {3, 200},
+        Increment = 1,
+        Suffix = "Speed",
+        CurrentValue = 16,
+        Flag = "Slider1", -- A flag is the identifier for the configuration file
+        Callback = function(Value)
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = (Value)
+        end,
+    })
+
+    local Dropdown = MainTab:CreateDropdown({
+        Name = "Select Test",
+        Options = {"Option 1", "Option 2"},
+        CurrentOption = {"Option 1"},
+        MultipleOptions = false,
+        Flag = "Dropdown1", -- A flag is the identifier for the configuration file
+        Callback = function(Options)
+            print(Options)
+        end,
+    })
+
+    -- CombatTab
+    local Combat = Window:CreateTab("Combat", nil)
+    local CombatSection = Combat:CreateSection("Combat", {Visible = true})  -- Forza la visibilità della sezione
+
+    local CombatToggle = CombatSection:CreateToggle({
+        Name = "Auto Parry",
+        CurrentValue = false,
+        Flag = "AutoParryCombat", -- A flag is the identifier for the configuration file
+        Callback = function(Value)
+            -- Add combat parry logic here
+        end,
+    })
+else
+    -- Codice per la notifica di errore se PlaceId non corrisponde
+    print("SFF Hub not loaded correctly")  -- Aggiungi questa per debug
+    
     -- Mostra la notifica di errore
-    showAchievementNotification()
+    showAchievementNotification("SFF Hub not loaded correctly", "Discord")
 end
