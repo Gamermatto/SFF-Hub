@@ -14,7 +14,7 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
     function showAchievementNotification(title, text)
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "SFF Hub loaded",
-            Text = "Version 0.2.9",
+            Text = "Version 0.2.9.1",
             Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
             Duration = 5  -- La durata della notifica in secondi
         })
@@ -206,7 +206,7 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
                 local TimeToHit = CalculateTimeToHit(Ball, HRP)
 
                 if Ball:GetAttribute("target") == Player.Name and not IsParried then
-                    if TimeToHit <= 0.2 then
+                    if TimeToHit <= 0.25 then
                         -- Esegue il parry
                         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
                         IsParried = true
