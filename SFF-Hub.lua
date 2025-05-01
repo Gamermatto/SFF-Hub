@@ -1,6 +1,6 @@
 --if game.PlaceId == 13772394625 then
 
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source.lua'))()
 
 local Window = Rayfield:CreateWindow({
     Name = "Blade Ball",
