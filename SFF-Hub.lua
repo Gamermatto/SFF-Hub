@@ -1,4 +1,4 @@
---if game.PlaceId == 13772394625 then
+if game.PlaceId == 13772394625 then
 
    local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
    
@@ -19,7 +19,7 @@
    showAchievementNotification()
 
    -- Aspetta 7 secondi prima di creare la finestra
-   task.wait(7)
+   task.wait(6)
 
    local Window = Rayfield:CreateWindow({
        Name = "Blade Ball",
@@ -162,4 +162,15 @@
            end)
        end,
    })
+else
+  function showAchievementNotification()
+  game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "SFF Hub not loaded correctly",
+    Text = "Discord",
+    Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
+    Duration = 5  -- La durata della notifica in secondi
+  })
+  showAchievementNotification()
+
+end
 end
