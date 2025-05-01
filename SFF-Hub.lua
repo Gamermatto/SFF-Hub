@@ -14,7 +14,7 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
     function showAchievementNotification(title, text)
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "SFF Hub loaded",
-            Text = "Version 0.2.8",
+            Text = "Version 0.2.9",
             Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
             Duration = 5  -- La durata della notifica in secondi
         })
@@ -180,10 +180,6 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
             local Player = Players.LocalPlayer
             local Cooldown = tick()
             local IsParried = false
-            local SpamMode = false
-            local TargetChangeTimestamps = {}
-            local TargetChangeThreshold = 5 -- Numero di cambi di target per attivare la Spam Mode
-            local TimeWindow = 1 -- Secondi
 
             -- Funzione per ottenere la palla con l'attributo "realBall"
             local function GetBall()
@@ -199,6 +195,56 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
                 local Speed = Ball.zoomies.VectorVelocity.Magnitude
                 local Distance = (HRP.Position - Ball.Position).Magnitude
                 return Distance / Speed
+            end
+
+            -- Gestione della logica del parry durante la simulazione
+            RunService.PreSimulation:Connect(function()
+                local Ball = GetBall()
+                local HRP = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                if not Ball or not HRP then return end
+
+                local TimeToHit = CalculateTimeToHit(Ball, HRP)
+
+                if Ball:GetAttribute("target") == Player.Name and not IsParried then
+                    if TimeToHit <= 0.2 then
+                        -- Esegue il parry
+                        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                        IsParried = true
+                        Cooldown = tick()
+                    end
+                end
+
+                -- Reset della condizione "parried" dopo il cooldown
+                if (tick() - Cooldown) >= 1 then
+                    IsParried = false
+                end
+            end)
+
+        end,
+    })
+
+    local Toggle = CombatTab:CreateToggle({
+        Name = "Auto Spam",
+        CurrentValue = false,
+        Flag = "AutoSpam", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+        Callback = function(Value)
+            local RunService = game:GetService("RunService")
+            local Players = game:GetService("Players")
+            local VirtualInputManager = game:GetService("VirtualInputManager")
+
+            local Player = Players.LocalPlayer
+            local SpamMode = false
+            local TargetChangeTimestamps = {}
+            local TargetChangeThreshold = 5 -- Numero di cambi di target per attivare la Spam Mode
+            local TimeWindow = 1 -- Secondi
+
+            -- Funzione per ottenere la palla con l'attributo "realBall"
+            local function GetBall()
+                for _, Ball in ipairs(workspace.Balls:GetChildren()) do
+                    if Ball:GetAttribute("realBall") then
+                        return Ball
+                    end
+                end
             end
 
             -- Monitoraggio dei cambi di target della palla
@@ -219,7 +265,7 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
                 end)
             end
 
-            -- Gestione della logica del parry durante la simulazione
+            -- Gestione della logica dello spam durante la simulazione
             RunService.PreSimulation:Connect(function()
                 local Ball = GetBall()
                 local HRP = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
@@ -231,103 +277,12 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
                     MonitorTargetChanges(Ball)
                 end
 
-                local TimeToHit = CalculateTimeToHit(Ball, HRP)
-
-                if Ball:GetAttribute("target") == Player.Name and not IsParried then
-                    if SpamMode then
-                        -- In Spam Mode, clicca costantemente
-                        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                        IsParried = true
-                        Cooldown = tick()
-                    elseif TimeToHit <= 0.2 then
-                        -- In modalità normale, clicca solo quando la palla è molto vicina
-                        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                        IsParried = true
-                        Cooldown = tick()
-                    end
-                end
-
-                -- Reset della condizione "parried" dopo il cooldown
-                if (tick() - Cooldown) >= 1 then
-                    IsParried = false
-                end
-            end)
-        end,
-    })
-
-    local Toggle = CombatTab:CreateToggle({
-        Name = "Auto Spam",
-        CurrentValue = false,
-        Flag = "AutoSpam", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-        Callback = function(Value)
-            local RunService = game:GetService("RunService")
-            local Players = game:GetService("Players")
-            local VirtualInputManager = game:GetService("VirtualInputManager")
-
-            local Player = Players.LocalPlayer
-            local HRP = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-            local SpamMode = false
-            local HitTimestamps = {}
-            local SpamThreshold = 3 -- Numero di colpi per attivare la Spam Mode
-            local TimeWindow = 2 -- Secondi
-
-            -- Funzione per ottenere la palla con l'attributo "realBall"
-            local function GetBall()
-                for _, Ball in ipairs(workspace.Balls:GetChildren()) do
-                    if Ball:GetAttribute("realBall") then
-                        return Ball
-                    end
-                end
-            end
-
-            -- Funzione per attivare la Spam Mode
-            local function ActivateSpamMode()
-                SpamMode = true
-                print("Spam Mode Attivata")
-            end
-
-            -- Funzione per disattivare la Spam Mode
-            local function DeactivateSpamMode()
-                SpamMode = false
-                print("Spam Mode Disattivata")
-            end
-
-            -- Monitoraggio dei colpi
-            workspace.Balls.ChildAdded:Connect(function()
-                local Ball = GetBall()
-                if Ball then
-                    Ball.Touched:Connect(function(hit)
-                        if hit and hit:IsDescendantOf(Player.Character) then
-                            table.insert(HitTimestamps, tick())
-                            -- Rimuove i timestamp più vecchi del TimeWindow
-                            for i = #HitTimestamps, 1, -1 do
-                                if tick() - HitTimestamps[i] > TimeWindow then
-                                    table.remove(HitTimestamps, i)
-                                end
-                            end
-                            if #HitTimestamps >= SpamThreshold and not SpamMode then
-                                ActivateSpamMode()
-                            end
-                        end
-                    end)
-                end
-            end)
-
-            -- Esecuzione della Spam Mode
-            RunService.RenderStepped:Connect(function()
-                if SpamMode then
+                if Ball:GetAttribute("target") == Player.Name and SpamMode then
+                    -- In Spam Mode, clicca costantemente
                     VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                    wait(0.05) -- Intervallo tra i clic
                 end
             end)
 
-            -- Disattivazione automatica della Spam Mode dopo un periodo di inattività
-            RunService.Stepped:Connect(function()
-                if SpamMode and #HitTimestamps > 0 and tick() - HitTimestamps[#HitTimestamps] > TimeWindow then
-                    DeactivateSpamMode()
-                    HitTimestamps = {}
-                end
-            end)
         end,
     })
 
@@ -335,8 +290,8 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
     local OthersTab = Window:CreateTab("Others", nil)
     local Section = OthersTab:CreateSection("Others")
 
-    local Label = OthersTabTab:CreateLabel("Credits", 4483362458, Color3.fromRGB(255, 255, 255), false) -- Title, Icon, Color, IgnoreTheme
-    local Paragraph = OthersTabTab:CreateParagraph({Title = "COMESTATE993", Content = "Owner of this good script."})
+    local Label = OthersTab:CreateLabel("Credits", 4483362458, Color3.fromRGB(255, 255, 255), false) -- Title, Icon, Color, IgnoreTheme
+    local Paragraph = OthersTab:CreateParagraph({Title = "COMESTATE993", Content = "Owner of this good script."})
 
 -- else
 --     -- Codice per la notifica di errore se PlaceId non corrisponde
