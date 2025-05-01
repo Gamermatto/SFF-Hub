@@ -13,8 +13,8 @@ if game.PlaceId == 13772394625 then
     -- Funzione per mostrare la notifica
     function showAchievementNotification(title, text)
         game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = title,
-            Text = text,
+            Title = "SFF Hub loaded",
+            Text = "Version 0.2",
             Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
             Duration = 5  -- La durata della notifica in secondi
         })
