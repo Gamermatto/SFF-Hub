@@ -14,7 +14,7 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
     function showAchievementNotification(title, text)
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "SFF Hub loaded",
-            Text = "Version 0.2.9.1",
+            Text = "Version 0.2.9.2",
             Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
             Duration = 5  -- La durata della notifica in secondi
         })
@@ -180,6 +180,7 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
             local Player = Players.LocalPlayer
             local Cooldown = tick()
             local IsParried = false
+            local ParryRadius = 5 -- Raggio in cui la palla deve entrare per attivare il parry
 
             -- Funzione per ottenere la palla con l'attributo "realBall"
             local function GetBall()
@@ -190,23 +191,16 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
                 end
             end
 
-            -- Funzione per calcolare il tempo stimato di impatto
-            local function CalculateTimeToHit(Ball, HRP)
-                local Speed = Ball.zoomies.VectorVelocity.Magnitude
-                local Distance = (HRP.Position - Ball.Position).Magnitude
-                return Distance / Speed
-            end
-
             -- Gestione della logica del parry durante la simulazione
             RunService.PreSimulation:Connect(function()
                 local Ball = GetBall()
                 local HRP = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if not Ball or not HRP then return end
 
-                local TimeToHit = CalculateTimeToHit(Ball, HRP)
+                local Distance = (HRP.Position - Ball.Position).Magnitude
 
                 if Ball:GetAttribute("target") == Player.Name and not IsParried then
-                    if TimeToHit <= 0.25 then
+                    if Distance <= ParryRadius then
                         -- Esegue il parry
                         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
                         IsParried = true
@@ -219,6 +213,7 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
                     IsParried = false
                 end
             end)
+
 
         end,
     })
@@ -237,6 +232,8 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
             local TargetChangeTimestamps = {}
             local TargetChangeThreshold = 5 -- Numero di cambi di target per attivare la Spam Mode
             local TimeWindow = 1 -- Secondi
+            local ClickInterval = 0.05 -- Intervallo tra i clic in modalità spam
+            local LastClickTime = tick()
 
             -- Funzione per ottenere la palla con l'attributo "realBall"
             local function GetBall()
@@ -278,8 +275,11 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
                 end
 
                 if Ball:GetAttribute("target") == Player.Name and SpamMode then
-                    -- In Spam Mode, clicca costantemente
-                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                    if tick() - LastClickTime >= ClickInterval then
+                        -- In modalità spam, clicca costantemente
+                        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                        LastClickTime = tick()
+                    end
                 end
             end)
 
