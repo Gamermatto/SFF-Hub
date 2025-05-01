@@ -30,7 +30,7 @@ local Window = Rayfield:CreateWindow({
        Subtitle = "Link In Discord Server",
        Note = "You can find our server from Misc Tab", -- Use this to tell the user how to get a key
        FileName = "SFF Hub | Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
-       SaveKey = false, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+       SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
        GrabKeyFromSite = true, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
        Key = {"https://pastebin.com/raw/0hCfHjs8"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
     }
@@ -52,3 +52,15 @@ Rayfield:Notify({
         loadstring(game:HttpGet("https://pastebin.com/raw/TV83kUPv", true))()
     end,
  })
+
+ local Slider = MainTab:CreateSlider({
+   Name = "Walk Speed,
+   Range = {0, 200},
+   Increment = 1,
+   Suffix = "Speed",
+   CurrentValue = 16,
+   Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(Value)
+      game.Players.LocalPlayer.Character.Humanoid.Walkspeed = (Value)
+   end,
+})
