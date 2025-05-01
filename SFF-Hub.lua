@@ -64,3 +64,14 @@ Rayfield:Notify({
       game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = (Value)
    end,
 })
+
+local Dropdown = MainTab:CreateDropdown({
+   Name = "Select Test",
+   Options = {"Option 1","Option 2"},
+   CurrentOption = {"Option 1"},
+   MultipleOptions = false,
+   Flag = "Dropdown1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(Options)
+     print(Options)
+   end,
+})
