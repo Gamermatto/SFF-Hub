@@ -2,6 +2,24 @@
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- Funzione per mostrare la notifica
+function showAchievementNotification()
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "SFF Hub loaded correctly",
+        Text = "You can find a key in our Discord!",
+        Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
+        Duration = 5  -- La durata della notifica in secondi
+    })
+end
+
+wait(7)
+
+-- Quando vuoi mostrare la notifica, chiama la funzione
+showAchievementNotification()
+
 local Window = Rayfield:CreateWindow({
     Name = "Blade Ball",
     Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
@@ -35,22 +53,6 @@ local Window = Rayfield:CreateWindow({
        Key = {"https://pastebin.com/raw/0hCfHjs8"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
     }
  })
-
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
--- Funzione per mostrare la notifica
-function showAchievementNotification()
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "SFF Hub loaded correctly",
-        Text = "You can find a key in our Discord!",
-        Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
-        Duration = 5  -- La durata della notifica in secondi
-    })
-end
-
--- Quando vuoi mostrare la notifica, chiama la funzione
-showAchievementNotification()
 
 --MainTab
 local MainTab = Window:CreateTab("Home", nil) -- Title, Image
