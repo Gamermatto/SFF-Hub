@@ -54,7 +54,7 @@ Rayfield:Notify({
  })
 
  local Slider = MainTab:CreateSlider({
-   Name = "Walk Speed,
+   Name = "Walk Speed",
    Range = {0, 200},
    Increment = 1,
    Suffix = "Speed",
