@@ -14,7 +14,7 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
     function showAchievementNotification(title, text)
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "SFF Hub loaded",
-            Text = "Version 0.2.7",
+            Text = "Version 0.2.8",
             Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
             Duration = 5  -- La durata della notifica in secondi
         })
@@ -180,7 +180,10 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
             local Player = Players.LocalPlayer
             local Cooldown = tick()
             local IsParried = false
-            local Connection = nil
+            local SpamMode = false
+            local TargetChangeTimestamps = {}
+            local TargetChangeThreshold = 5 -- Numero di cambi di target per attivare la Spam Mode
+            local TimeWindow = 1 -- Secondi
 
             -- Funzione per ottenere la palla con l'attributo "realBall"
             local function GetBall()
@@ -191,49 +194,56 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
                 end
             end
 
-            -- Funzione per resettare la connessione
-            local function ResetConnection()
-                if Connection then
-                    Connection:Disconnect()
-                    Connection = nil
-                end
-            end
-
-            -- Resetta la connessione quando viene aggiunta una nuova palla
-            workspace.Balls.ChildAdded:Connect(function()
-                local Ball = GetBall()
-                if Ball then
-                    ResetConnection()
-                    Connection = Ball:GetAttributeChangedSignal("target"):Connect(function()
-                        IsParried = false
-                    end)
-                end
-            end)
-
-            -- Funzione per calcolare la finestra di tempo ideale per il parry
-            local function CalculateParryWindow(Ball, HRP)
+            -- Funzione per calcolare il tempo stimato di impatto
+            local function CalculateTimeToHit(Ball, HRP)
                 local Speed = Ball.zoomies.VectorVelocity.Magnitude
                 local Distance = (HRP.Position - Ball.Position).Magnitude
-                -- Calcola il tempo rimanente prima che la palla colpisca il giocatore
-                local TimeToHit = Distance / Speed
-                return TimeToHit
+                return Distance / Speed
+            end
+
+            -- Monitoraggio dei cambi di target della palla
+            local function MonitorTargetChanges(Ball)
+                Ball:GetAttributeChangedSignal("target"):Connect(function()
+                    table.insert(TargetChangeTimestamps, tick())
+                    -- Rimuove i timestamp più vecchi del TimeWindow
+                    for i = #TargetChangeTimestamps, 1, -1 do
+                        if tick() - TargetChangeTimestamps[i] > TimeWindow then
+                            table.remove(TargetChangeTimestamps, i)
+                        end
+                    end
+                    if #TargetChangeTimestamps >= TargetChangeThreshold then
+                        SpamMode = true
+                    else
+                        SpamMode = false
+                    end
+                end)
             end
 
             -- Gestione della logica del parry durante la simulazione
             RunService.PreSimulation:Connect(function()
-                local Ball, HRP = GetBall(), Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                local Ball = GetBall()
+                local HRP = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if not Ball or not HRP then return end
 
-                local TimeToHit = CalculateParryWindow(Ball, HRP)
+                -- Inizia a monitorare i cambi di target
+                if not Ball:GetAttribute("Monitoring") then
+                    Ball:SetAttribute("Monitoring", true)
+                    MonitorTargetChanges(Ball)
+                end
 
-                -- Se la palla è destinata al giocatore e non è già parata, controlla il tempo per il parry
+                local TimeToHit = CalculateTimeToHit(Ball, HRP)
+
                 if Ball:GetAttribute("target") == Player.Name and not IsParried then
-                    -- Se la palla è abbastanza vicina e il tempo rimanente è inferiore alla soglia, effettua il parry
-                    if TimeToHit <= 0.3 and not IsParried then
-                        -- Manda l'input per il click (parry)
+                    if SpamMode then
+                        -- In Spam Mode, clicca costantemente
                         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
                         IsParried = true
-                        Cooldown = tick()  -- Imposta il cooldown dopo il parry
+                        Cooldown = tick()
+                    elseif TimeToHit <= 0.2 then
+                        -- In modalità normale, clicca solo quando la palla è molto vicina
+                        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                        IsParried = true
+                        Cooldown = tick()
                     end
                 end
 
