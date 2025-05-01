@@ -98,8 +98,9 @@ if game.PlaceId == 13772394625 then
    })
 
    -- CombatTab
-   local Combat = Window:CreateTab("Combat", nil) -- Title, Image
-   local CombatSection = Combat:CreateSection("Combat")
+    local Combat = Window:CreateTab("Combat", nil)
+    local CombatSection = Combat:CreateSection("Combat", {Visible = true})  -- Forza la visibilità della sezione
+
 
    local Toggle = CombatSection:CreateToggle({
        Name = "Auto Parry",
@@ -182,7 +183,7 @@ else
             Duration = 5  -- La durata della notifica in secondi
         })
     end
-    
+
     -- Mostra la notifica di errore
     showAchievementNotification()
 end
