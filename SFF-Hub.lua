@@ -15,10 +15,10 @@ function showAchievementNotification()
     })
 end
 
-wait(7)
-
 -- Quando vuoi mostrare la notifica, chiama la funzione
 showAchievementNotification()
+
+wait(7)
 
 local Window = Rayfield:CreateWindow({
     Name = "Blade Ball",
