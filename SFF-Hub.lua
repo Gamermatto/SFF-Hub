@@ -1,7 +1,7 @@
 -- Verifica l'ID del gioco
 print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
 
-if game.PlaceId == 13772394625 then
+--if game.PlaceId == 13772394625 then
     -- Codice per la notifica di successo
     print("SFF Hub loaded correctly")  -- Aggiungi questa per debug
 
@@ -14,7 +14,7 @@ if game.PlaceId == 13772394625 then
     function showAchievementNotification(title, text)
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "SFF Hub loaded",
-            Text = "Version 0.2.6",
+            Text = "Version 0.2.7",
             Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
             Duration = 5  -- La durata della notifica in secondi
         })
@@ -210,48 +210,34 @@ if game.PlaceId == 13772394625 then
                 end
             end)
 
-            -- Calcolo dinamico della soglia in base alla velocità
-            local function GetDynamicParryThreshold(speed)
-                -- Se la palla è molto veloce, anticipa leggermente
-                if speed >= 200 then
-                    return 0.40 -- anticipa un po' per sicurezza
-                elseif speed >= 150 then
-                    return 0.45
-                elseif speed >= 100 then
-                    return 0.50
-                else
-                    return 0.55 -- più precisa, ma rischiosa
-                end
-            end
-
-            -- Funzione per calcolare il tempo stimato all'impatto
-            local function CalculateTimeToHit(Ball, HRP)
+            -- Funzione per calcolare la finestra di tempo ideale per il parry
+            local function CalculateParryWindow(Ball, HRP)
                 local Speed = Ball.zoomies.VectorVelocity.Magnitude
                 local Distance = (HRP.Position - Ball.Position).Magnitude
+                -- Calcola il tempo rimanente prima che la palla colpisca il giocatore
                 local TimeToHit = Distance / Speed
-                return TimeToHit, Speed
+                return TimeToHit
             end
 
             -- Gestione della logica del parry durante la simulazione
             RunService.PreSimulation:Connect(function()
-                local Ball = GetBall()
-                local HRP = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                local Ball, HRP = GetBall(), Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if not Ball or not HRP then return end
 
-                local TimeToHit, Speed = CalculateTimeToHit(Ball, HRP)
-                local DynamicThreshold = GetDynamicParryThreshold(Speed)
+                local TimeToHit = CalculateParryWindow(Ball, HRP)
 
-                -- Verifica se la palla è destinata al giocatore
+                -- Se la palla è destinata al giocatore e non è già parata, controlla il tempo per il parry
                 if Ball:GetAttribute("target") == Player.Name and not IsParried then
-                    -- Esegue il parry solo se il tempo all’impatto è inferiore alla soglia calcolata
-                    if TimeToHit <= DynamicThreshold then
+                    -- Se la palla è abbastanza vicina e il tempo rimanente è inferiore alla soglia, effettua il parry
+                    if TimeToHit <= 0.3 and not IsParried then
+                        -- Manda l'input per il click (parry)
                         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
                         IsParried = true
-                        Cooldown = tick()
+                        Cooldown = tick()  -- Imposta il cooldown dopo il parry
                     end
                 end
 
-                -- Reset della possibilità di parare dopo 1 secondo
+                -- Reset della condizione "parried" dopo il cooldown
                 if (tick() - Cooldown) >= 1 then
                     IsParried = false
                 end
@@ -267,20 +253,15 @@ if game.PlaceId == 13772394625 then
             local RunService = game:GetService("RunService")
             local Players = game:GetService("Players")
             local VirtualInputManager = game:GetService("VirtualInputManager")
-            
+
             local Player = Players.LocalPlayer
-            local Cooldown = tick()
-            local IsParried = false
-            local Connection = nil
-            
-            -- Anti-spam setup
-            local recentHits = {}
-            local spamActive = false
-            local SPAM_THRESHOLD = 3        -- colpi ravvicinati richiesti
-            local TIME_WINDOW = 1.5         -- secondi entro cui devono avvenire i colpi
-            local spamConnection = nil
-            
-            -- Ottieni la palla
+            local HRP = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+            local SpamMode = false
+            local HitTimestamps = {}
+            local SpamThreshold = 3 -- Numero di colpi per attivare la Spam Mode
+            local TimeWindow = 2 -- Secondi
+
+            -- Funzione per ottenere la palla con l'attributo "realBall"
             local function GetBall()
                 for _, Ball in ipairs(workspace.Balls:GetChildren()) do
                     if Ball:GetAttribute("realBall") then
@@ -288,95 +269,55 @@ if game.PlaceId == 13772394625 then
                     end
                 end
             end
-            
-            -- Reset connessione
-            local function ResetConnection()
-                if Connection then
-                    Connection:Disconnect()
-                    Connection = nil
-                end
+
+            -- Funzione per attivare la Spam Mode
+            local function ActivateSpamMode()
+                SpamMode = true
+                print("Spam Mode Attivata")
             end
-            
-            -- Calcolo finestra parry
-            local function CalculateParryWindow(Ball, HRP)
-                local Speed = Ball.zoomies.VectorVelocity.Magnitude
-                local Distance = (HRP.Position - Ball.Position).Magnitude
-                return Distance / Speed
+
+            -- Funzione per disattivare la Spam Mode
+            local function DeactivateSpamMode()
+                SpamMode = false
+                print("Spam Mode Disattivata")
             end
-            
-            -- Funzione spam click
-            local function StartSpamClick()
-                if spamConnection then return end -- già attivo
-                spamActive = true
-                spamConnection = RunService.RenderStepped:Connect(function()
-                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                    task.wait(0.01) -- intervallo velocissimo
-                end)
-            end
-            
-            local function StopSpamClick()
-                if spamConnection then
-                    spamConnection:Disconnect()
-                    spamConnection = nil
-                end
-                spamActive = false
-            end
-            
-            -- Gestione auto parry
-            RunService.PreSimulation:Connect(function()
-                local Ball = GetBall()
-                local HRP = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-                if not Ball or not HRP then return end
-            
-                local TimeToHit = CalculateParryWindow(Ball, HRP)
-            
-                -- Se destinata al giocatore
-                if Ball:GetAttribute("target") == Player.Name then
-                    -- Registra l’evento
-                    table.insert(recentHits, tick())
-                    -- Pulisce eventi vecchi
-                    for i = #recentHits, 1, -1 do
-                        if tick() - recentHits[i] > TIME_WINDOW then
-                            table.remove(recentHits, i)
-                        end
-                    end
-            
-                    -- Attiva spam mode se troppe hit ravvicinate
-                    if #recentHits >= SPAM_THRESHOLD and not spamActive then
-                        StartSpamClick()
-                    end
-            
-                    -- Parry normale
-                    if not IsParried and TimeToHit <= 0.65 then
-                        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                        IsParried = true
-                        Cooldown = tick()
-                    end
-                end
-            
-                -- Cooldown reset
-                if (tick() - Cooldown) >= 1 then
-                    IsParried = false
-                end
-            
-                -- Spegni spam se non riceve colpi per un po’
-                if #recentHits > 0 and (tick() - recentHits[#recentHits]) > TIME_WINDOW then
-                    recentHits = {}
-                    StopSpamClick()
-                end
-            end)
-            
-            -- Monitoraggio nuove palle
+
+            -- Monitoraggio dei colpi
             workspace.Balls.ChildAdded:Connect(function()
                 local Ball = GetBall()
                 if Ball then
-                    ResetConnection()
-                    Connection = Ball:GetAttributeChangedSignal("target"):Connect(function()
-                        IsParried = false
+                    Ball.Touched:Connect(function(hit)
+                        if hit and hit:IsDescendantOf(Player.Character) then
+                            table.insert(HitTimestamps, tick())
+                            -- Rimuove i timestamp più vecchi del TimeWindow
+                            for i = #HitTimestamps, 1, -1 do
+                                if tick() - HitTimestamps[i] > TimeWindow then
+                                    table.remove(HitTimestamps, i)
+                                end
+                            end
+                            if #HitTimestamps >= SpamThreshold and not SpamMode then
+                                ActivateSpamMode()
+                            end
+                        end
                     end)
                 end
             end)
-            
+
+            -- Esecuzione della Spam Mode
+            RunService.RenderStepped:Connect(function()
+                if SpamMode then
+                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                    wait(0.05) -- Intervallo tra i clic
+                end
+            end)
+
+            -- Disattivazione automatica della Spam Mode dopo un periodo di inattività
+            RunService.Stepped:Connect(function()
+                if SpamMode and #HitTimestamps > 0 and tick() - HitTimestamps[#HitTimestamps] > TimeWindow then
+                    DeactivateSpamMode()
+                    HitTimestamps = {}
+                end
+            end)
         end,
     })
 
@@ -385,15 +326,15 @@ if game.PlaceId == 13772394625 then
     local Section = OthersTab:CreateSection("Others")
 
     local Label = OthersTabTab:CreateLabel("Credits", 4483362458, Color3.fromRGB(255, 255, 255), false) -- Title, Icon, Color, IgnoreTheme
-    local Paragraph = Tab:CreateParagraph({Title = "COMESTATE993", Content = "Owner of this good script."})
+    local Paragraph = OthersTabTab:CreateParagraph({Title = "COMESTATE993", Content = "Owner of this good script."})
 
-else
-    -- Codice per la notifica di errore se PlaceId non corrisponde
-    print("SFF Hub not loaded correctly")  -- Aggiungi questa per debug
+-- else
+--     -- Codice per la notifica di errore se PlaceId non corrisponde
+--     print("SFF Hub not loaded correctly")  -- Aggiungi questa per debug
     
-    -- Mostra la notifica di errore
-    showAchievementNotification("SFF Hub not loaded correctly", "Discord")
-end
+--     -- Mostra la notifica di errore
+--     showAchievementNotification("SFF Hub not loaded correctly", "Discord")
+-- end
 
 
 
