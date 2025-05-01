@@ -173,7 +173,7 @@ if game.PlaceId == 13772394625 then
         Callback = function()
         -- The function that takes place when the button is pressed
         end,
-     })
+    })
 
     local Toggle = CombatTab:CreateToggle({
         Name = "Auto Spam",
@@ -294,7 +294,7 @@ if game.PlaceId == 13772394625 then
             end)
             
         end,
-     })
+    })
 else
     -- Codice per la notifica di errore se PlaceId non corrisponde
     print("SFF Hub not loaded correctly")  -- Aggiungi questa per debug
