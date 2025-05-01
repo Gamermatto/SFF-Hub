@@ -12,14 +12,12 @@ end
 -- Quando vuoi mostrare la notifica, chiama la funzione
 showAchievementNotification()
 
-wait(7)
+task.wait(7)
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
-
-
 
 local Window = Rayfield:CreateWindow({
     Name = "Blade Ball",
