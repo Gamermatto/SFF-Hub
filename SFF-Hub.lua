@@ -1,10 +1,4 @@
 --if game.PlaceId == 13772394625 then
-
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
 -- Funzione per mostrare la notifica
 function showAchievementNotification()
     game:GetService("StarterGui"):SetCore("SendNotification", {
@@ -19,6 +13,13 @@ end
 showAchievementNotification()
 
 wait(7)
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+
 
 local Window = Rayfield:CreateWindow({
     Name = "Blade Ball",
