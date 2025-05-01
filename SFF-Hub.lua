@@ -1,4 +1,10 @@
+-- Verifica l'ID del gioco
+print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
+
+
 if game.PlaceId == 13772394625 then
+    -- Codice per la notifica di successo
+    print("SFF Hub loaded correctly")  -- Aggiungi questa per debug
 
    local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
    
@@ -163,14 +169,20 @@ if game.PlaceId == 13772394625 then
        end,
    })
 else
-  function showAchievementNotification()
-  game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "SFF Hub not loaded correctly",
-    Text = "Discord",
-    Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
-    Duration = 5  -- La durata della notifica in secondi
-  })
-  showAchievementNotification()
-
-end
+    -- Codice per la notifica di errore se PlaceId non corrisponde
+    print("SFF Hub not loaded correctly")  -- Aggiungi questa per debug
+    
+    -- Funzione per mostrare la notifica di errore
+    function showAchievementNotification()
+        print("Mostra la notifica di errore")  -- Aggiungi per debug
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "SFF Hub not loaded correctly",
+            Text = "Discord",
+            Icon = "rbxassetid://1234567890",  -- Opzionale: sostituisci con un'icona personalizzata
+            Duration = 5  -- La durata della notifica in secondi
+        })
+    end
+    
+    -- Mostra la notifica di errore
+    showAchievementNotification()
 end
