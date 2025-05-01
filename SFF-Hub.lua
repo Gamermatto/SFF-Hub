@@ -14,7 +14,7 @@ if game.PlaceId == 13772394625 then
     function showAchievementNotification(title, text)
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "SFF Hub loaded",
-            Text = "Version 0.2.5",
+            Text = "Version 0.2.6",
             Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
             Duration = 5  -- La durata della notifica in secondi
         })
@@ -166,12 +166,96 @@ if game.PlaceId == 13772394625 then
 
     -- CombatTab
     local CombatTab = Window:CreateTab("Combat", nil)
-    local Section = CombatTab:CreateSection("Combat")  -- Forza la visibilità della sezione
+    local Section = CombatTab:CreateSection("Combat")
 
-    local Button = CombatTab:CreateButton({
-        Name = "Button Example",
-        Callback = function()
-        -- The function that takes place when the button is pressed
+    local toggle = CombatTab:CreateToggle({
+        Name = "Auto Parry",
+        CurrentValue = false,
+        Flag = "AutoParry", -- A flag is the identifier for the configuration file
+        Callback = function(Value)
+            local RunService = game:GetService("RunService")
+            local Players = game:GetService("Players")
+            local VirtualInputManager = game:GetService("VirtualInputManager")
+
+            local Player = Players.LocalPlayer
+            local Cooldown = tick()
+            local IsParried = false
+            local Connection = nil
+
+            -- Funzione per ottenere la palla con l'attributo "realBall"
+            local function GetBall()
+                for _, Ball in ipairs(workspace.Balls:GetChildren()) do
+                    if Ball:GetAttribute("realBall") then
+                        return Ball
+                    end
+                end
+            end
+
+            -- Funzione per resettare la connessione
+            local function ResetConnection()
+                if Connection then
+                    Connection:Disconnect()
+                    Connection = nil
+                end
+            end
+
+            -- Resetta la connessione quando viene aggiunta una nuova palla
+            workspace.Balls.ChildAdded:Connect(function()
+                local Ball = GetBall()
+                if Ball then
+                    ResetConnection()
+                    Connection = Ball:GetAttributeChangedSignal("target"):Connect(function()
+                        IsParried = false
+                    end)
+                end
+            end)
+
+            -- Calcolo dinamico della soglia in base alla velocità
+            local function GetDynamicParryThreshold(speed)
+                -- Se la palla è molto veloce, anticipa leggermente
+                if speed >= 200 then
+                    return 0.40 -- anticipa un po' per sicurezza
+                elseif speed >= 150 then
+                    return 0.45
+                elseif speed >= 100 then
+                    return 0.50
+                else
+                    return 0.55 -- più precisa, ma rischiosa
+                end
+            end
+
+            -- Funzione per calcolare il tempo stimato all'impatto
+            local function CalculateTimeToHit(Ball, HRP)
+                local Speed = Ball.zoomies.VectorVelocity.Magnitude
+                local Distance = (HRP.Position - Ball.Position).Magnitude
+                local TimeToHit = Distance / Speed
+                return TimeToHit, Speed
+            end
+
+            -- Gestione della logica del parry durante la simulazione
+            RunService.PreSimulation:Connect(function()
+                local Ball = GetBall()
+                local HRP = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                if not Ball or not HRP then return end
+
+                local TimeToHit, Speed = CalculateTimeToHit(Ball, HRP)
+                local DynamicThreshold = GetDynamicParryThreshold(Speed)
+
+                -- Verifica se la palla è destinata al giocatore
+                if Ball:GetAttribute("target") == Player.Name and not IsParried then
+                    -- Esegue il parry solo se il tempo all’impatto è inferiore alla soglia calcolata
+                    if TimeToHit <= DynamicThreshold then
+                        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                        IsParried = true
+                        Cooldown = tick()
+                    end
+                end
+
+                -- Reset della possibilità di parare dopo 1 secondo
+                if (tick() - Cooldown) >= 1 then
+                    IsParried = false
+                end
+            end)
         end,
     })
 
@@ -295,6 +379,14 @@ if game.PlaceId == 13772394625 then
             
         end,
     })
+
+    -- Others
+    local OthersTab = Window:CreateTab("Others", nil)
+    local Section = OthersTab:CreateSection("Others")
+
+    local Label = OthersTabTab:CreateLabel("Credits", 4483362458, Color3.fromRGB(255, 255, 255), false) -- Title, Icon, Color, IgnoreTheme
+    local Paragraph = Tab:CreateParagraph({Title = "COMESTATE993", Content = "Owner of this good script."})
+
 else
     -- Codice per la notifica di errore se PlaceId non corrisponde
     print("SFF Hub not loaded correctly")  -- Aggiungi questa per debug
@@ -302,3 +394,6 @@ else
     -- Mostra la notifica di errore
     showAchievementNotification("SFF Hub not loaded correctly", "Discord")
 end
+
+
+
