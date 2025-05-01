@@ -8,7 +8,7 @@ if game.PlaceId == 13772394625 then
    function showAchievementNotification()
        game:GetService("StarterGui"):SetCore("SendNotification", {
            Title = "SFF Hub loaded correctly",
-           Text = "You can find a key in our Discord!",
+           Text = "Discord",
            Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
            Duration = 5  -- La durata della notifica in secondi
        })
@@ -46,7 +46,7 @@ if game.PlaceId == 13772394625 then
        KeySettings = {
            Title = "SFF HUb | Key",
            Subtitle = "Link In Discord Server",
-           Note = "Server discord copied on your board", -- Use this to tell the user how to get a key
+           Note = "c", -- Use this to tell the user how to get a key
            FileName = "SFF Hub | Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
            SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
            GrabKeyFromSite = true, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
