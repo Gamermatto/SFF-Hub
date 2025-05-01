@@ -14,7 +14,7 @@ if game.PlaceId == 13772394625 then
     function showAchievementNotification(title, text)
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "SFF Hub loaded",
-            Text = "Version 0.2.1",
+            Text = "Version 0.2.2",
             Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
             Duration = 5  -- La durata della notifica in secondi
         })
@@ -168,14 +168,15 @@ if game.PlaceId == 13772394625 then
     local Combat = Window:CreateTab("Combat", nil)
     local Section = Combat:CreateSection("Combat")  -- Forza la visibilità della sezione
 
-    local CombatToggle = CombatSection:CreateToggle({
-        Name = "Auto Parry",
+    local Toggle = CombatTab:CreateToggle({
+        Name = "Auto Spam",
         CurrentValue = false,
-        Flag = "AutoParryCombat", -- A flag is the identifier for the configuration file
+        Flag = "AutoSpam", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
         Callback = function(Value)
-            -- Add combat parry logic here
+        -- The function that takes place when the toggle is pressed
+        -- The variable (Value) is a boolean on whether the toggle is true or false
         end,
-    })
+     })
 else
     -- Codice per la notifica di errore se PlaceId non corrisponde
     print("SFF Hub not loaded correctly")  -- Aggiungi questa per debug
