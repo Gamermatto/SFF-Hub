@@ -39,19 +39,22 @@ local Window = Rayfield:CreateWindow({
 local MainTab = Window:CreateTab("Home", 4483362458) -- Title, Image
 local MainSection = MainTab:CreateSection("Main")
 
-Rayfield:Notify({
-    Title = "Script executed successfully",
-    Content = "Script up to date",
-    Duration = 4.5,
-    Image = 4483362458,
- })
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
- local Button = MainTab:CreateButton({
-    Name = "Fly",
-    Callback = function()
-        loadstring(game:HttpGet("https://pastebin.com/raw/TV83kUPv", true))()
-    end,
- })
+-- Funzione per mostrare la notifica
+function showAchievementNotification()
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "SFF Hub",
+        Text = "SFF HUb is updated!",
+        Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
+        Duration = 5  -- La durata della notifica in secondi
+    })
+end
+
+-- Quando vuoi mostrare la notifica, chiama la funzione
+showAchievementNotification()
+
 
  local Slider = MainTab:CreateSlider({
    Name = "WalkSpeed",
