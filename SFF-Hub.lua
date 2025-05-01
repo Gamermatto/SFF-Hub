@@ -57,7 +57,7 @@ showAchievementNotification()
 
 
  local Slider = MainTab:CreateSlider({
-   Name = "WalkSpeed",
+   Name = "Walk Speed",
    Range = {3, 200},
    Increment = 1,
    Suffix = "Speed",
