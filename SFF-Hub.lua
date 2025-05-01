@@ -14,7 +14,7 @@ if game.PlaceId == 13772394625 then
     function showAchievementNotification(title, text)
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "SFF Hub loaded",
-            Text = "Version 0.2",
+            Text = "Version 0.2.1",
             Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
             Duration = 5  -- La durata della notifica in secondi
         })
@@ -166,7 +166,7 @@ if game.PlaceId == 13772394625 then
 
     -- CombatTab
     local Combat = Window:CreateTab("Combat", nil)
-    local CombatSection = Combat:CreateSection("Combat", {Visible = true})  -- Forza la visibilità della sezione
+    local Section = Combat:CreateSection("Combat")  -- Forza la visibilità della sezione
 
     local CombatToggle = CombatSection:CreateToggle({
         Name = "Auto Parry",
