@@ -36,9 +36,6 @@ local Window = Rayfield:CreateWindow({
     }
  })
 
-local MainTab = Window:CreateTab("Home", 4483362458) -- Title, Image
-local MainSection = MainTab:CreateSection("Main")
-
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
@@ -47,10 +44,15 @@ function showAchievementNotification()
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "SFF Hub loaded correctly",
         Text = "You can find a key in our Discord!",
-        --Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
+        Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
         Duration = 5  -- La durata della notifica in secondi
     })
 end
+
+--MainTab
+
+local MainTab = Window:CreateTab("Home", 4483362458) -- Title, Image
+local MainSection = MainTab:CreateSection("Main")
 
 -- Quando vuoi mostrare la notifica, chiama la funzione
 showAchievementNotification()
@@ -85,3 +87,6 @@ local Dropdown = MainTab:CreateDropdown({
      print(Options)
    end,
 })
+
+local Combat = Window:CreateTab("Combat", 4483362458) -- Title, Image
+local CombatSection = MainTab:CreateSection("Combat")
