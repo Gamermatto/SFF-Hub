@@ -78,7 +78,7 @@ if game.PlaceId == 13772394625 then
             local IsParried = false
             local Connection = nil
 
-            -- Function to get the ball with the "realBall" attribute
+            -- Funzione per ottenere la palla con l'attributo "realBall"
             local function GetBall()
                 for _, Ball in ipairs(workspace.Balls:GetChildren()) do
                     if Ball:GetAttribute("realBall") then
@@ -87,7 +87,7 @@ if game.PlaceId == 13772394625 then
                 end
             end
 
-            -- Function to reset the connection
+            -- Funzione per resettare la connessione
             local function ResetConnection()
                 if Connection then
                     Connection:Disconnect()
@@ -95,7 +95,7 @@ if game.PlaceId == 13772394625 then
                 end
             end
 
-            -- Reset connection when a new ball is added
+            -- Resetta la connessione quando viene aggiunta una nuova palla
             workspace.Balls.ChildAdded:Connect(function()
                 local Ball = GetBall()
                 if Ball then
@@ -106,21 +106,34 @@ if game.PlaceId == 13772394625 then
                 end
             end)
 
-            -- Handle the parrying logic during the simulation
+            -- Funzione per calcolare la finestra di tempo ideale per il parry
+            local function CalculateParryWindow(Ball, HRP)
+                local Speed = Ball.zoomies.VectorVelocity.Magnitude
+                local Distance = (HRP.Position - Ball.Position).Magnitude
+                -- Calcola il tempo rimanente prima che la palla colpisca il giocatore
+                local TimeToHit = Distance / Speed
+                return TimeToHit
+            end
+
+            -- Gestione della logica del parry durante la simulazione
             RunService.PreSimulation:Connect(function()
                 local Ball, HRP = GetBall(), Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if not Ball or not HRP then return end
 
-                local Speed = Ball.zoomies.VectorVelocity.Magnitude
-                local Distance = (HRP.Position - Ball.Position).Magnitude
+                local TimeToHit = CalculateParryWindow(Ball, HRP)
 
-                if Ball:GetAttribute("target") == Player.Name and not IsParried and Distance / Speed <= 0.65 then
-                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                    IsParried = true
-                    Cooldown = tick()
+                -- Se la palla è destinata al giocatore e non è già parata, controlla il tempo per il parry
+                if Ball:GetAttribute("target") == Player.Name and not IsParried then
+                    -- Se la palla è abbastanza vicina e il tempo rimanente è inferiore alla soglia, effettua il parry
+                    if TimeToHit <= 0.65 and not IsParried then
+                        -- Manda l'input per il click (parry)
+                        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                        IsParried = true
+                        Cooldown = tick()  -- Imposta il cooldown dopo il parry
+                    end
                 end
 
-                -- Reset parried status after cooldown
+                -- Reset della condizione "parried" dopo il cooldown
                 if (tick() - Cooldown) >= 1 then
                     IsParried = false
                 end
