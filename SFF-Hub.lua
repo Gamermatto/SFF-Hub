@@ -14,7 +14,7 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
     function showAchievementNotification(title, text)
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "SFF Hub loaded",
-            Text = "Version 0.2.9.2",
+            Text = "Version 0.2.9.3",
             Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
             Duration = 5  -- La durata della notifica in secondi
         })
@@ -178,9 +178,10 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
             local VirtualInputManager = game:GetService("VirtualInputManager")
 
             local Player = Players.LocalPlayer
-            local Cooldown = tick()
+            local Cooldown = 0
             local IsParried = false
             local ParryRadius = 5 -- Raggio in cui la palla deve entrare per attivare il parry
+            local ParryCooldownTime = 1 -- Tempo di cooldown per il parry
 
             -- Funzione per ottenere la palla con l'attributo "realBall"
             local function GetBall()
@@ -189,12 +190,14 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
                         return Ball
                     end
                 end
+                return nil
             end
 
             -- Gestione della logica del parry durante la simulazione
             RunService.PreSimulation:Connect(function()
                 local Ball = GetBall()
                 local HRP = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                
                 if not Ball or not HRP then return end
 
                 local Distance = (HRP.Position - Ball.Position).Magnitude
@@ -209,7 +212,7 @@ print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
                 end
 
                 -- Reset della condizione "parried" dopo il cooldown
-                if (tick() - Cooldown) >= 1 then
+                if IsParried and (tick() - Cooldown) >= ParryCooldownTime then
                     IsParried = false
                 end
             end)
