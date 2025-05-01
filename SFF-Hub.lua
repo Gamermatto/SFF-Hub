@@ -51,7 +51,7 @@ end
 
 --MainTab
 
-local MainTab = Window:CreateTab("Home", 4483362458) -- Title, Image
+local MainTab = Window:CreateTab("Home", nil) -- Title, Image
 local MainSection = MainTab:CreateSection("Main")
 
 -- Quando vuoi mostrare la notifica, chiama la funzione
@@ -88,5 +88,6 @@ local Dropdown = MainTab:CreateDropdown({
    end,
 })
 
-local Combat = Window:CreateTab("Combat", 4483362458) -- Title, Image
-local CombatSection = MainTab:CreateSection("Combat")
+-- CombatTab
+local Combat = Window:CreateTab("Combat", nil) -- Title, Image
+local CombatSection = CombatTab:CreateSection("Combat")
