@@ -70,7 +70,7 @@ if game.PlaceId == 13772394625 then
        CurrentValue = false,
        Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
        Callback = function(Value)
-        local Debug = false -- Set this to true if you want my debug output.
+        local Debug = true -- Set this to true if you want my debug output.
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local Players = game:GetService("Players")
 
