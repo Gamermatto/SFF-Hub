@@ -45,8 +45,8 @@ local player = Players.LocalPlayer
 -- Funzione per mostrare la notifica
 function showAchievementNotification()
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "SFF Hub",
-        Text = "SFF HUb is updated!",
+        Title = "SFF Hub loaded correctly",
+        Text = "You can find a key in our Discord!",
         Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
         Duration = 5  -- La durata della notifica in secondi
     })
@@ -56,8 +56,15 @@ end
 showAchievementNotification()
 
 
+ local Button = MainTab:CreateButton({
+    Name = "Fly",
+    Callback = function()
+        loadstring(game:HttpGet("https://pastebin.com/raw/TV83kUPv", true))()
+    end,
+ })
+
  local Slider = MainTab:CreateSlider({
-   Name = "Walk Speed",
+   Name = "WalkSpeed",
    Range = {3, 200},
    Increment = 1,
    Suffix = "Speed",
