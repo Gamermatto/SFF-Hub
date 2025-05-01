@@ -47,7 +47,7 @@ function showAchievementNotification()
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "SFF Hub loaded correctly",
         Text = "You can find a key in our Discord!",
-        Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
+        --Icon = "rbxassetid://1234567890", -- Opzionale: sostituisci con un'icona personalizzata
         Duration = 5  -- La durata della notifica in secondi
     })
 end
