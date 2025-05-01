@@ -49,13 +49,14 @@ function showAchievementNotification()
     })
 end
 
---MainTab
+-- Quando vuoi mostrare la notifica, chiama la funzione
+showAchievementNotification()
 
+--MainTab
 local MainTab = Window:CreateTab("Home", nil) -- Title, Image
 local MainSection = MainTab:CreateSection("Main")
 
--- Quando vuoi mostrare la notifica, chiama la funzione
-showAchievementNotification()
+
 
 local Toggle = MainTab:CreateToggle({
    Name = "Fly",
