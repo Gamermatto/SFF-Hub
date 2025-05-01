@@ -2,7 +2,7 @@
 print(game.PlaceId)  -- Controlla quale è effettivamente l'ID della mappa
 
 
---if game.PlaceId == 13772394625 then
+if game.PlaceId == 13772394625 or game.PLaceId == 15234596844 then
     -- Codice per la notifica di successo
     print("SFF Hub loaded correctly")  -- Aggiungi questa per debug
 
